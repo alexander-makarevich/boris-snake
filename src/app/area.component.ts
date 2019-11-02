@@ -12,5 +12,8 @@ export class AreaComponent implements OnInit {
 
   ngOnInit(): void {
     this.ctx = this.canvas.nativeElement.getContext('2d');
+
+    this.ctx.fillStyle = 'red';
+    this.ctx.fillRect(0, 0, 10, 10);
   }
 }
