@@ -1,11 +1,16 @@
-import { Component, Input, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, ViewChild, ElementRef, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-area',
   template: `<canvas #canvas width="300" height="150"></canvas>`,
-  styles: [`h1 { font-family: Lato; }`]
+  styles: ['canvas { border-style: solid }']
 })
-export class AreaComponent  {
+export class AreaComponent implements OnInit {
   @ViewChild('canvas', { static: true }) 
   canvas: ElementRef<HTMLCanvasElement>;
+  private ctx: CanvasRenderingContext2D;
+
+  ngOnInit(): void {
+    this.ctx = this.canvas.nativeElement.getContext('2d');
+  }
 }
