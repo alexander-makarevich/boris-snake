@@ -10,13 +10,43 @@ enum Direction {
   Right,
 }
 
-
 interface SnakeUnit {
   x: number;
   y: number
 }
 
-type Snake = SnakeUnit[];
+/**
+ * head of the snake is the first unit
+ */
+class Snake {
+  constructor(public units: SnakeUnit[]) {
+  }
+
+  private headAtNextStep(direction: Direction): SnakeUnit {
+    const head: SnakeUnit = this.units[0];
+
+    let unit: SnakeUnit;
+    switch(direction) {
+      case Direction.Up: unit = {x: head.x, y: head.y - 1}; break;
+      case Direction.Down: unit = {x: head.x, y: head.y + 1}; break;
+      case Direction.Left: unit = {x: head.x - 1, y: head.y}; break;
+      case Direction.Right: unit = {x: head.x + 1, y: head.y}; break;
+    }
+
+    const second: SnakeUnit = this.units[1];
+    if (second.x === unit.x && second.y === unit.y) {
+      unit = {x: head.x + (head.x - second.x), y: head.y + (head.y - second.y)};
+    }
+
+    return unit;
+  }
+
+  move(direction: Direction) {
+    const unit: SnakeUnit = this.headAtNextStep(direction);
+    this.units.unshift(unit);
+    this.units.pop();
+  }
+}
 
 @Component({
   selector: 'app-area',
@@ -34,13 +64,11 @@ export class AreaComponent implements OnDestroy, AfterViewInit {
   readonly maxHeight = 15;
   readonly squareSidePx = 10;
 
-  private x = 0;
-  private y = 0;
   private subscription;
-  private snake: Snake = [{x: 10, y: 7}, {x: 11, y: 7}, {x: 12, y: 7}];
+  private snake: Snake = new Snake([{x: 10, y: 7}, {x: 11, y: 7}, {x: 12, y: 7}]);
 
   drawSnake() {
-    for(let unit of this.snake) {
+    for(let unit of this.snake.units) {
       this.ctx.fillRect(unit.x * this.squareSidePx, unit.y * this.squareSidePx, this.squareSidePx, this.squareSidePx);
     }
   }
@@ -49,7 +77,6 @@ export class AreaComponent implements OnDestroy, AfterViewInit {
     this.ctx = this.canvas.nativeElement.getContext('2d');
 
     this.ctx.fillStyle = 'red';
-    this.ctx.fillRect(0, 0, this.squareSidePx, this.squareSidePx);
 
     this.drawSnake();
 
@@ -59,29 +86,22 @@ export class AreaComponent implements OnDestroy, AfterViewInit {
         console.log('tick: ' + tick + event.keyCode);
 
         switch(event.keyCode) {
-          case RIGHT_ARROW:
-            this.x++;
-            break;
-          case LEFT_ARROW:
-            this.x--;
-            break;
-          case UP_ARROW:
-            this.y--;
-            break;
-          case DOWN_ARROW:
-            this.y++;
-            break;
+          case RIGHT_ARROW: this.snake.move(Direction.Right); break;
+          case LEFT_ARROW: this.snake.move(Direction.Left); break;
+          case UP_ARROW: this.snake.move(Direction.Up); break;
+          case DOWN_ARROW: this.snake.move(Direction.Down); break;
         }
 
         this.ctx.clearRect(0, 0, this.squareSidePx * this.maxWidth, this.squareSidePx * this.maxHeight);
 
-        this.ctx.fillRect(this.x * this.squareSidePx, this.y * this.squareSidePx, this.squareSidePx, this.squareSidePx);
+        this.drawSnake();
       });
   }
 
   check(): boolean {
-    return 0 <= this.x && this.x < this.maxWidth &&
-      0<= this.y && this.y < this.maxHeight;
+    const head = this.snake.units[0];
+    return 0 <= head.x && head.x < this.maxWidth &&
+      0<= head.y && head.y < this.maxHeight;
   }
 
   ngOnDestroy() {
