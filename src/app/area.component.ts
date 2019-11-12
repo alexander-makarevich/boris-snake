@@ -1,6 +1,14 @@
 import { Component, Input, ViewChild, ElementRef, OnDestroy, AfterViewInit } from '@angular/core';
 import {UP_ARROW, DOWN_ARROW, LEFT_ARROW, RIGHT_ARROW} from '@angular/cdk/keycodes';
-import { fromEvent } from 'rxjs';
+import { fromEvent, interval } from 'rxjs';
+import {withLatestFrom} from 'rxjs/operators';
+
+enum Direction {
+  Up = 1,
+  Down,
+  Left,
+  Right,
+}
 
 @Component({
   selector: 'app-area',
@@ -13,6 +21,7 @@ export class AreaComponent implements OnDestroy, AfterViewInit {
   canvas: ElementRef<HTMLCanvasElement>;
   private ctx: CanvasRenderingContext2D;
   private keyUps = fromEvent(document, 'keyup');
+  private tick = interval(1000);
   readonly maxWidth = 30;
   readonly maxHeight = 15;
   readonly squareSidePx = 10;
@@ -27,27 +36,30 @@ export class AreaComponent implements OnDestroy, AfterViewInit {
     this.ctx.fillStyle = 'red';
     this.ctx.fillRect(0, 0, this.squareSidePx, this.squareSidePx);
 
-    this.subscription = this.keyUps.subscribe((event: KeyboardEvent) => {
-      console.log(event.keyCode);
-      switch(event.keyCode) {
-        case RIGHT_ARROW:
-          this.x++;
-          break;
-        case LEFT_ARROW:
-          this.x--;
-          break;
-        case UP_ARROW:
-          this.y--;
-          break;
-        case DOWN_ARROW:
-          this.y++;
-          break;
-      }
+    this.subscription = this.tick
+      .pipe(withLatestFrom(this.keyUps))
+      .subscribe(([tick, event]: [number, KeyboardEvent]) => {
+        console.log('tick: ' + tick + event.keyCode);
 
-      this.ctx.clearRect(0, 0, this.squareSidePx * this.maxWidth, this.squareSidePx * this.maxHeight);
+        switch(event.keyCode) {
+          case RIGHT_ARROW:
+            this.x++;
+            break;
+          case LEFT_ARROW:
+            this.x--;
+            break;
+          case UP_ARROW:
+            this.y--;
+            break;
+          case DOWN_ARROW:
+            this.y++;
+            break;
+        }
 
-      this.ctx.fillRect(this.x * this.squareSidePx, this.y * this.squareSidePx, this.squareSidePx, this.squareSidePx);
-    });
+        this.ctx.clearRect(0, 0, this.squareSidePx * this.maxWidth, this.squareSidePx * this.maxHeight);
+
+        this.ctx.fillRect(this.x * this.squareSidePx, this.y * this.squareSidePx, this.squareSidePx, this.squareSidePx);
+      });
   }
 
   check(): boolean {
