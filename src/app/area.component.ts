@@ -4,7 +4,8 @@ import { fromEvent } from 'rxjs';
 
 @Component({
   selector: 'app-area',
-  template: `<canvas #canvas [width]="squareSidePx * maxWidth" [height]="squareSidePx * maxHeight"></canvas>`,
+  template: `<canvas [hidden]="!check()" #canvas [width]="squareSidePx * maxWidth" [height]="squareSidePx * maxHeight"></canvas>
+  <p *ngIf="!check()">Вы проиграли</p>`,
   styles: ['canvas { border-style: solid }']
 })
 export class AreaComponent implements OnDestroy, AfterViewInit {
@@ -47,6 +48,11 @@ export class AreaComponent implements OnDestroy, AfterViewInit {
 
       this.ctx.fillRect(this.x * this.squareSidePx, this.y * this.squareSidePx, this.squareSidePx, this.squareSidePx);
     });
+  }
+
+  check(): boolean {
+    return 0 <= this.x && this.x < this.maxWidth &&
+      0<= this.y && this.y < this.maxHeight;
   }
 
   ngOnDestroy() {
