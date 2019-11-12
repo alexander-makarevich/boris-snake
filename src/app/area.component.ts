@@ -10,6 +10,14 @@ enum Direction {
   Right,
 }
 
+
+class SnakeUnit {
+  constructor(public x: number, public y: number) {
+  }
+}
+
+type Snake = SnakeUnit[];
+
 @Component({
   selector: 'app-area',
   template: `<canvas [hidden]="!check()" #canvas [width]="squareSidePx * maxWidth" [height]="squareSidePx * maxHeight"></canvas>
@@ -29,12 +37,17 @@ export class AreaComponent implements OnDestroy, AfterViewInit {
   private x = 0;
   private y = 0;
   private subscription;
+  private snake: Snake = [new SnakeUnit(0, 0), new SnakeUnit(0,1), new SnakeUnit(0, 2)];
 
   ngAfterViewInit() {
     this.ctx = this.canvas.nativeElement.getContext('2d');
 
     this.ctx.fillStyle = 'red';
     this.ctx.fillRect(0, 0, this.squareSidePx, this.squareSidePx);
+
+    for(let unit of this.snake) {
+      this.ctx.fillRect(unit.x * this.squareSidePx, unit.y * this.squareSidePx, this.squareSidePx, this.squareSidePx);
+    }
 
     this.subscription = this.tick
       .pipe(withLatestFrom(this.keyUps))
