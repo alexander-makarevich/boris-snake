@@ -48,6 +48,13 @@ class Snake {
   }
 }
 
+/**
+ * max is not included at the range
+ */
+function getRandomInt(max: number): number {
+  return Math.floor(Math.random() * Math.floor(max));
+}
+
 @Component({
   selector: 'app-area',
   template: `<canvas [hidden]="!check()" #canvas [width]="squareSidePx * maxWidth" [height]="squareSidePx * maxHeight"></canvas>
@@ -66,8 +73,10 @@ export class AreaComponent implements OnDestroy, AfterViewInit {
 
   private subscription;
   private snake: Snake = new Snake([{x: 10, y: 7}, {x: 11, y: 7}, {x: 12, y: 7}]);
+  private apple: SnakeUnit | null = null;
 
   drawSnake() {
+    this.ctx.fillStyle = 'red';
     for(let unit of this.snake.units) {
       this.ctx.fillRect(unit.x * this.squareSidePx, unit.y * this.squareSidePx, this.squareSidePx, this.squareSidePx);
     }
@@ -76,9 +85,9 @@ export class AreaComponent implements OnDestroy, AfterViewInit {
   ngAfterViewInit() {
     this.ctx = this.canvas.nativeElement.getContext('2d');
 
-    this.ctx.fillStyle = 'red';
-
     this.drawSnake();
+    this.addApple();
+    this.drawApple();
 
     this.subscription = this.tick
       .pipe(withLatestFrom(this.keyUps))
@@ -95,6 +104,7 @@ export class AreaComponent implements OnDestroy, AfterViewInit {
         this.ctx.clearRect(0, 0, this.squareSidePx * this.maxWidth, this.squareSidePx * this.maxHeight);
 
         this.drawSnake();
+        this.drawApple();
       });
   }
 
@@ -102,6 +112,22 @@ export class AreaComponent implements OnDestroy, AfterViewInit {
     const head = this.snake.units[0];
     return 0 <= head.x && head.x < this.maxWidth &&
       0<= head.y && head.y < this.maxHeight;
+  }
+
+  addApple() {
+    const x: number = getRandomInt(this.maxWidth);
+    const y: number = getRandomInt(this.maxHeight);
+    this.apple = {x, y};
+  }
+
+  drawApple() {
+    if (this.apple === null) return ;
+
+    this.ctx.fillStyle = 'grey';
+    this.ctx.fillRect(
+      this.apple.x * this.squareSidePx,
+      this.apple.y * this.squareSidePx,
+      this.squareSidePx, this.squareSidePx);
   }
 
   ngOnDestroy() {
